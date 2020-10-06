@@ -4,6 +4,8 @@ import org.apache.bcel.classfile.Attribute;
 import org.apache.bcel.classfile.Field;
 import org.apache.bcel.classfile.FieldOrMethod;
 import org.apache.bcel.classfile.JavaClass;
+import org.apache.bcel.classfile.LocalVariable;
+import org.apache.bcel.classfile.LocalVariableTable;
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.classfile.Signature;
 import org.apache.bcel.generic.ArrayType;
@@ -888,6 +890,77 @@ public class DtsApi {
     }
 
     private String getMethodParamSignature(JavaClass clazz, TypeDefinition typeDefinition, Method m) {
+        // List<String> params = new ArrayList<String>();
+
+        // System.out.println("\n\n\n\n▶ " + m);
+        // LocalVariableTable vt = m.getLocalVariableTable();
+        // if (vt instanceof LocalVariableTable) {
+        //     LocalVariable[] vts = vt.getLocalVariableTable();
+        //     List<LocalVariable> lvars = new ArrayList<>(vts.length);
+        //     lvars.addAll(Arrays.asList(vts));
+        //     System.out.println("▶ lvars.size() -> " + lvars.size());
+        //     // List<LocalVariable> vtsps = new ArrayList<LocalVariable>(vts.length);
+        //     // System.out.println("▶ vts.length -> " + vts.length);
+        // }
+
+        // System.out.println("▶ t.getLocalVariable(1) -> " + t.getLocalVariable(1, 1));
+        // System.out.println("▶ m.getLocalVariableTable() -> " + m.getLocalVariableTable());
+        // System.out.println("▶ m.getParameterAnnotationEntries() -> " + m.getParameterAnnotationEntries());
+        // System.out.println("▶ t.getName() -> " + t.getName());
+
+        // Attribute[] s = m.getAttributes();
+        // System.out.println("▶ m.getLocalVariableTable() -> " + m.getLocalVariableTable());
+        // for (Attribute a : s) {
+        //     // System.out.println("▶ a -> " + a);
+        //     // System.out.println("▶ a.getTag() -> " + a.getTag());
+        //     // System.out.println("▶ a -> " + ((Signature) a).getSignature());
+        //     // if (a instanceof Signature) {
+        //     //     String methodSignature = ((Signature) a).getSignature();
+        //     //     System.out.println("▶ methodSignature -> " + methodSignature);
+        //     // }
+        // }
+        // // System.out.println("▶ s -> " + s);
+        // for (Type t : m.getArgumentTypes()) {
+        //     System.out.println("Type -> " + t);
+        //     // System.out.println("[t.getLength()] -> " + t.getLength());
+        // }
+
+        // System.out.println("\n\n\n\n▶ " + m);
+        // System.out.println("▶ m.getArgumentTypes() -> " + Arrays.asList(m.getArgumentTypes()));
+        // System.out.println("▶ m.getName() -> " + m.getName());
+        // // for (Type t : m.getArgumentTypes()) {
+        // //     System.out.println("Type t -> " + t);
+        // //     // System.out.println("[t.getLength()] -> " + t.getLength());
+        // // }
+
+        // LocalVariableTable lvtable = m.getLocalVariableTable();
+        // System.out.println("▶ lvtable -> " + lvtable);
+        // System.out.println("▶ lvtable.getTableLength() -> " + lvtable.getTableLength());
+
+        // // List<LocalVariable> lvars = new ArrayList<>();
+        // // if (lvtable instanceof LocalVariableTable) {
+        // //     lvars.addAll(Arrays.asList(lvtable.getLocalVariableTable()));
+        // // }
+
+        //
+
+        // System.out.println("\n\n\n\n▶ " + m);
+        // LocalVariableTable lvtable = m.getLocalVariableTable();
+        // List<LocalVariable> lvars = Arrays.asList();
+        // if (lvtable instanceof LocalVariableTable) {
+        //     lvars = Arrays.asList(lvtable.getLocalVariableTable());
+        //     if (lvars.size() > 0 && lvars.get(0).getName() == "this") {
+        //         lvars.remove(0);
+        //     }
+        //     System.out.println("▶ lvars -> " + lvars);
+        // }
+
+        System.out.println("\n\n\n\n▶ " + m);
+        Pattern pattern = Pattern.compile("\\s" + m.getName() + "\\((.*)\\)");
+        Matcher matcher = pattern.matcher(m.toString());
+        matcher.find();
+        List<String> params = Arrays.asList(matcher.group(1).split("[\\,]?\\s"));
+
         StringBuilder sb = new StringBuilder();
         sb.append("(");
         int idx = 0;
@@ -895,9 +968,24 @@ public class DtsApi {
             if (idx > 0) {
                 sb.append(", ");
             }
-            sb.append("param");
-            sb.append(idx++);
+
+            // // LocalVariable lvar = lvars.get(idx - 1);
+            // // if (lvar instanceof LocalVariable) {
+            if (params.size() > idx) {
+                int pidx = (idx * 2) + 1;
+                // System.out.println("▶ params.get(" + pidx + ") -> " + params.get(pidx));
+                sb.append(params.get(pidx));
+                idx++;
+            } else {
+                System.out.println("▶ type[" + (idx) + "] -> " + type);
+                sb.append("param");
+                sb.append(idx++);
+            }
             sb.append(": ");
+            // if (lvtable instanceof LocalVariableTable) {
+            //     System.out.println("▶ lvtable[idx] -> " + lvtable.);
+            // }
+            // System.out.println("▶ lvars.get(" + (idx - 1) + ") -> " + lvars.get((idx - 1)));
 
             String paramTypeName = getTypeScriptTypeFromJavaType(type, typeDefinition);
 
