@@ -4,8 +4,6 @@ import org.apache.bcel.classfile.Attribute;
 import org.apache.bcel.classfile.Field;
 import org.apache.bcel.classfile.FieldOrMethod;
 import org.apache.bcel.classfile.JavaClass;
-import org.apache.bcel.classfile.LocalVariable;
-import org.apache.bcel.classfile.LocalVariableTable;
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.classfile.Signature;
 import org.apache.bcel.generic.ArrayType;
@@ -882,6 +880,12 @@ public class DtsApi {
     private String getMethodName(Method m) {
         String name = m.getName();
 
+        if (name.startsWith("-deprecated_")) {
+            System.out.println("🆘 name.startsWith -deprecated_ -> " + m.toString());
+            name = name.replaceFirst(Pattern.quote("-deprecated_"), "");
+            System.out.println("▶ name -> " + name);
+        }
+
         if (isConstructor(m)) {
             name = "constructor";
         }
@@ -890,10 +894,18 @@ public class DtsApi {
     }
 
     private String getMethodParamSignature(JavaClass clazz, TypeDefinition typeDefinition, Method m) {
-        Pattern pattern = Pattern.compile("\\s" + m.getName() + "\\((.*)\\)");
+        // System.out.println("▶ " + m.getName() + " -> " + m);
+        Pattern pattern = Pattern.compile("\\s" + Pattern.quote(m.getName()) + "\\((.*)\\)");
         Matcher matcher = pattern.matcher(m.toString());
-        matcher.find();
-        List<String> params = Arrays.asList(matcher.group(1).split("[\\,]?\\s"));
+        List<String> params = Arrays.asList();
+        if (matcher.find()) {
+            params = Arrays.asList(matcher.group(1).split("[\\,]?\\s"));
+            if (matcher.find()) {
+                System.out.println("🆘 Second matcher.find() -> " + m.toString());
+            }
+        } else {
+            System.out.println("🆘 !matcher.find() -> " + m.toString());
+        }
 
         StringBuilder sb = new StringBuilder();
         sb.append("(");
@@ -903,7 +915,12 @@ public class DtsApi {
                 sb.append(", ");
             }
             if (params.size() > idx) {
-                sb.append(params.get((idx * 2) + 1));
+                String param = params.get((idx * 2) + 1);
+                param = param.replaceFirst(Pattern.quote("$this$"), "");
+                if (param.length() == 0) {
+                    param = "param";
+                }
+                sb.append(param);
                 idx++;
             } else {
                 sb.append("param");
