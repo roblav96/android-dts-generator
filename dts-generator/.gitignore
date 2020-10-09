@@ -6,3 +6,7 @@ local.properties
 *.jar
 /**/*.d.ts
 /jars/**/*.jar
+
+jar-files
+node_modules
+super-files
