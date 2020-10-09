@@ -1,0 +1,11 @@
+#!/usr/bin/env just --justfile
+# https://github.com/casey/just
+
+build-jar:
+    ./gradlew jar
+
+jar-files:
+    rm -rf jar-files
+    ./gradlew dependencies --configuration testCompileOnly
+    ./gradlew extractAllJars
+    tree jar-files
