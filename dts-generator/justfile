@@ -2,10 +2,19 @@
 # https://github.com/casey/just
 
 build-jar:
-    ./gradlew jar
+	./gradlew jar
 
 jar-files:
-    rm -rf jar-files
-    ./gradlew dependencies --configuration testCompileOnly
-    ./gradlew extractAllJars
-    tree jar-files
+	rm -rf jar-files
+	./gradlew dependencies --configuration testCompileOnly
+	./gradlew extractAllJars
+	tree jar-files
+
+out DEPENDENCY:
+	rm -rf out
+	java -jar build/libs/dts-generator.jar -skip-declarations \
+	-super ${ANDROID_HOME}/platforms/android-29/android.jar -super jar-files \
+	-input-generics ../libs/generics.txt -input jar-files/*{{DEPENDENCY}}*
+
+pbcopy:
+	pbcopy < out/android.d.ts
