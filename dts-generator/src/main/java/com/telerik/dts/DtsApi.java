@@ -890,7 +890,7 @@ public class DtsApi {
         return name;
     }
 
-    // ✨ Emit named params = better signature help
+    private Map<String, List<String>> realParams = new HashMap<>();
     private String getMethodParamSignature(JavaClass clazz, TypeDefinition typeDefinition, Method m) {
         // System.out.println("\n\n▶ " + m.getName() + " -> " + m.toString());
 
@@ -907,11 +907,16 @@ public class DtsApi {
         }
         // System.out.println("▶ params -> " + params);
 
+        String realKey = clazz.getClassName() + "." + m.getName() + m.getSignature();
+        // System.out.println("▶ realKey -> " + realKey);
         LocalVariableTable lvtable = m.getLocalVariableTable();
         List<LocalVariable> lvars = Arrays.asList();
         if (lvtable instanceof LocalVariableTable) {
             lvars = Arrays.asList(lvtable.getLocalVariableTable());
             // System.out.println("▶ lvars -> " + lvars);
+            this.realParams.put(realKey, params);
+        } else if (this.realParams.containsKey(realKey)) {
+            params = this.realParams.get(realKey);
         }
 
         StringBuilder sb = new StringBuilder();
