@@ -4,6 +4,8 @@ import org.apache.bcel.classfile.Attribute;
 import org.apache.bcel.classfile.Field;
 import org.apache.bcel.classfile.FieldOrMethod;
 import org.apache.bcel.classfile.JavaClass;
+import org.apache.bcel.classfile.LocalVariable;
+import org.apache.bcel.classfile.LocalVariableTable;
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.classfile.Signature;
 import org.apache.bcel.generic.ArrayType;
@@ -904,6 +906,13 @@ public class DtsApi {
             System.out.println("🆘 getMethodParamSignature: !matcher.find() -> " + m.toString());
         }
         // System.out.println("▶ params -> " + params);
+
+        LocalVariableTable lvtable = m.getLocalVariableTable();
+        List<LocalVariable> lvars = Arrays.asList();
+        if (lvtable instanceof LocalVariableTable) {
+            lvars = Arrays.asList(lvtable.getLocalVariableTable());
+            // System.out.println("▶ lvars -> " + lvars);
+        }
 
         StringBuilder sb = new StringBuilder();
         sb.append("(");
