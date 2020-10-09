@@ -13,6 +13,8 @@ if(project.hasProperty("jarsOutput")) {
 repositories {
     google()
     jcenter()
+    mavenCentral()
+    maven { url "https://jitpack.io" }
 }
 
 allprojects {
@@ -24,17 +26,19 @@ allprojects {
 }
 
 dependencies {
-    implementation 'org.apache.bcel:bcel:6.4.1'
-    implementation 'commons-io:commons-io:2.6'
-    implementation 'com.github.spotbugs:spotbugs:3.1.12'
+    implementation 'org.apache.bcel:bcel:+'
+    implementation 'commons-io:commons-io:+'
+    implementation 'com.github.spotbugs:spotbugs:3.+'
+    // implementation 'org.tinylog:tinylog-impl:+'
 
-    // add your dependency here as the example bellow, make sure you are using testCompileOnly
-    // testCompileOnly  "com.android.support:support-v4:27.0.1"
+    //
 
-    //AndroidX
-    //testCompileOnly  "androidx.legacy:legacy-support-v4:1.0.0"
-    //testCompileOnly  "androidx.appcompat:appcompat:1.0.0"
-    //testCompileOnly   "com.google.android.material:material:1.0.0"
+    // testCompileOnly 'com.android.support:support-v4:+'
+    // testCompileOnly 'com.android.support:support-v13:+'
+
+    testCompileOnly 'androidx.legacy:legacy-support-v4:1.+'
+    testCompileOnly 'androidx.appcompat:appcompat:1.2.+'
+    testCompileOnly 'com.google.android.material:material:1.2.+'
 }
 
 jar {
