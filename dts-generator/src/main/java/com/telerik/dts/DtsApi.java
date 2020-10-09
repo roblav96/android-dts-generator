@@ -4,6 +4,8 @@ import org.apache.bcel.classfile.Attribute;
 import org.apache.bcel.classfile.Field;
 import org.apache.bcel.classfile.FieldOrMethod;
 import org.apache.bcel.classfile.JavaClass;
+import org.apache.bcel.classfile.LocalVariable;
+import org.apache.bcel.classfile.LocalVariableTable;
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.classfile.Signature;
 import org.apache.bcel.generic.ArrayType;
@@ -44,6 +46,7 @@ public class DtsApi {
     public static List<String> imports = new ArrayList<>();
     public static String JavaLangObject = "java.lang.Object";
 
+    private static List<String> reservedWords = Arrays.asList("arguments", "break", "case", "catch", "class", "const", "continue", "debugger", "default", "delete", "do", "else", "eval", "export", "extends", "false", "finally", "for", "function", "if", "implements", "import", "in", "instanceof", "interface", "let", "new", "null", "package", "private", "protected", "public", "return", "static", "super", "switch", "this", "throw", "true", "try", "typeof", "var", "void", "while", "with", "yield");
     private static Map<String, String> globalAliases = new HashMap<>();
 
     private Map<String, String> extendsOverrides = new HashMap<>();
@@ -880,12 +883,6 @@ public class DtsApi {
     private String getMethodName(Method m) {
         String name = m.getName();
 
-        if (name.startsWith("-deprecated_")) {
-            System.out.println("🆘 name.startsWith -deprecated_ -> " + m.toString());
-            name = name.replaceFirst(Pattern.quote("-deprecated_"), "");
-            System.out.println("▶ name -> " + name);
-        }
-
         if (isConstructor(m)) {
             name = "constructor";
         }
@@ -893,19 +890,33 @@ public class DtsApi {
         return name;
     }
 
+    // ✨ Emit named params = better signature help
     private String getMethodParamSignature(JavaClass clazz, TypeDefinition typeDefinition, Method m) {
-        // System.out.println("▶ " + m.getName() + " -> " + m);
-        Pattern pattern = Pattern.compile("\\s" + Pattern.quote(m.getName()) + "\\((.*)\\)");
-        Matcher matcher = pattern.matcher(m.toString());
+        System.out.println("\n\n▶ " + m.getName() + " -> " + m);
+
+        Pattern pattern = Pattern.compile("\\s" + Pattern.quote(m.getName()) + "\\((.*)\\)\\s");
+        Matcher matcher = pattern.matcher(m.toString() + " ");
         List<String> params = Arrays.asList();
         if (matcher.find()) {
-            params = Arrays.asList(matcher.group(1).split("[\\,]?\\s"));
+            // params = Arrays.asList(matcher.group(1).split("[\\,]?\\s"));
+            params = Arrays.asList(matcher.group(1).split("\\,\\s"));
             if (matcher.find()) {
                 System.out.println("🆘 Second matcher.find() -> " + m.toString());
             }
         } else {
             System.out.println("🆘 !matcher.find() -> " + m.toString());
         }
+        System.out.println("▶ params -> " + params);
+
+        // LocalVariableTable lvtable = m.getLocalVariableTable();
+        // List<LocalVariable> lvars = Arrays.asList();
+        // if (lvtable instanceof LocalVariableTable) {
+        //     lvars = Arrays.asList(lvtable.getLocalVariableTable());
+        //     // if (lvars.size() > 0 && lvars.get(0).getName() == "this") {
+        //     //     lvars.remove(0);
+        //     // }
+        // }
+        // System.out.println("▶ lvars -> " + lvars);
 
         StringBuilder sb = new StringBuilder();
         sb.append("(");
@@ -915,11 +926,18 @@ public class DtsApi {
                 sb.append(", ");
             }
             if (params.size() > idx) {
-                String param = params.get((idx * 2) + 1);
-                param = param.replaceFirst(Pattern.quote("$this$"), "");
-                if (param.length() == 0) {
-                    param = "param";
+                String param = params.get(idx);
+                List<String> parts = Arrays.asList(param.split("\\s"));
+                if (parts.size() == 2) {
+                    param = parts.get(1);
+                    param = param.replaceFirst(Pattern.quote("$this$"), "");
+                    if (param.length() == 0 || DtsApi.reservedWords.contains(param)) {
+                        param = "param" + idx;
+                    }
+                } else  {
+                    param = "param" + idx;
                 }
+                System.out.println("▶ param -> " + param);
                 sb.append(param);
                 idx++;
             } else {
