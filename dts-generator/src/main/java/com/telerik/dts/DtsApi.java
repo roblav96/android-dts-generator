@@ -894,27 +894,23 @@ public class DtsApi {
     private String getMethodParamSignature(JavaClass clazz, TypeDefinition typeDefinition, Method m) {
         // System.out.println("\n\n▶ " + m.getName() + " -> " + m.toString());
 
+        List<String> params = Arrays.asList();
         Pattern pattern = Pattern.compile("\\s" + Pattern.quote(m.getName()) + "\\((.*)\\)\\s");
         Matcher matcher = pattern.matcher(m.toString() + " ");
-        List<String> params = Arrays.asList();
         if (matcher.find()) {
             params = Arrays.asList(matcher.group(1).split("\\,\\s"));
-            if (matcher.find()) {
-                System.out.println("🆘 getMethodParamSignature: Second matcher.find() -> " + m.toString());
-            }
-        } else {
-            System.out.println("🆘 getMethodParamSignature: !matcher.find() -> " + m.toString());
         }
         // System.out.println("▶ params -> " + params);
 
         String realKey = clazz.getClassName() + "." + m.getName() + m.getSignature();
         // System.out.println("▶ realKey -> " + realKey);
-        LocalVariableTable lvtable = m.getLocalVariableTable();
         List<LocalVariable> lvars = Arrays.asList();
-        if (lvtable instanceof LocalVariableTable) {
-            lvars = Arrays.asList(lvtable.getLocalVariableTable());
-            // System.out.println("▶ lvars -> " + lvars);
+        LocalVariableTable lvTable = m.getLocalVariableTable();
+        // System.out.println("▶ lvTable -> " + lvTable);
+        if (lvTable instanceof LocalVariableTable) {
             this.realParams.put(realKey, params);
+            lvars = Arrays.asList(lvTable.getLocalVariableTable());
+            // System.out.println("▶ lvars -> " + lvars);
         } else if (this.realParams.containsKey(realKey)) {
             params = this.realParams.get(realKey);
         }
@@ -927,16 +923,36 @@ public class DtsApi {
                 sb.append(", ");
             }
             if (params.size() > idx) {
-                String param = params.get(idx);
-                List<String> parts = Arrays.asList(param.split("\\s"));
+                String param = "param" + idx;
+                List<String> parts = Arrays.asList(params.get(idx).split("\\s"));
                 if (parts.size() == 2) {
                     param = parts.get(1);
-                    param = param.replaceFirst(Pattern.quote("$this$"), "");
-                    if (DtsApi.reservedWords.contains(param)) {
-                        param = param + idx;
+                    param = param.replace("$", "");
+                    if (param.startsWith("arg")) {
+                        String sig = parts.get(0);
+                        boolean plural = sig.endsWith("[]");
+                        if (plural) {
+                            sig = sig.substring(0, sig.length() - 2);
+                        }
+                        List<String> sigs = Arrays.asList(sig.split("\\W"));
+                        sig = sigs.get(sigs.size() - 1);
+                        sig = sig.substring(0, 1).toLowerCase() + sig.substring(1);
+                        // if (Arrays.asList("int", "string").contains(sig)) {
+                        //     sig = "value";
+                        // }
+                        if (plural) {
+                            sig = sig + "s";
+                        }
+                        // System.out.println("▶ sig -> " + sig);
+                        param = sig + idx;
                     }
-                } else  {
+                }
+                try {
+                    Integer.parseInt(param);
                     param = "param" + idx;
+                } catch (NumberFormatException error) {}
+                if (DtsApi.reservedWords.contains(param)) {
+                    param = param + idx;
                 }
                 // System.out.println("▶ param -> " + param);
                 sb.append(param);
