@@ -10,11 +10,16 @@ jar-files :
 	./gradlew extractAllJars
 	tree -I '* (androidx.*|* (com.google.android.material_material_*' jar-files
 
-out JAR_FILES :
-	rm -f out/android.d.ts
+out input_jars :
+	mkdir -p out
+	touch out/android.d.ts
+	truncate -s0 out/android.d.ts
 	java -jar build/libs/dts-generator.jar -skip-declarations \
 	-super $ANDROID_HOME/platforms/android-29/android.jar -super jar-files \
-	-input-generics ../libs/generics.txt -input jar-files/*{{JAR_FILES}}*
+	-input-generics ../libs/generics.txt -input jar-files/*{{input_jars}}*
+
+watch-out input_jars :
+	watchexec --watch src --restart -- 'printf "\ec\e[3J"; just build-jar; just out {{input_jars}}'
 
 pbcopy :
 	pbcopy < out/android.d.ts
