@@ -19,7 +19,22 @@ out input_jars :
 	-input-generics ../libs/generics.txt -input jar-files/*{{input_jars}}*
 
 watch-out input_jars :
-	watchexec --watch src --restart -- 'printf "\ec\e[3J"; just build-jar; just out {{input_jars}}'
+	watchexec --watch src --restart -- just _watch-out {{input_jars}}
+_watch-out input_jars :
+	printf "\ec\e[3J"
+	just build-jar
+	just out {{input_jars}}
 
 pbcopy :
 	pbcopy < out/android.d.ts
+
+android-platform version :
+	java -jar build/libs/dts-generator.jar \
+	-input $ANDROID_HOME/platforms/android-{{version}}/android.jar
+	cp out/android.d.ts ../out/android-platform-{{version}}.d.ts
+
+androidx version :
+	java -jar build/libs/dts-generator.jar -skip-declarations \
+	-super $ANDROID_HOME/platforms/android-{{version}}/android.jar \
+	-input-generics ../libs/generics.txt -input jar-files
+	cp out/android.d.ts ../out/androidx-{{version}}.d.ts
