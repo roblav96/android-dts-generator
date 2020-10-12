@@ -21,3 +21,7 @@
 testparams.txt
 /jars
 bin/
+
+jar-files
+node_modules
+super-files
