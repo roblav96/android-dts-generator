@@ -95,6 +95,7 @@ public class Generator {
         for (File file : jars) {
             if (file.exists()) {
                 if (file.isFile() && file.getName().endsWith(".jar")) {
+                    System.out.println("▶ -input -> " + file);
                     JarFile jar = JarFile.readJar(file.getAbsolutePath());
                     ClassRepo.cacheJarFile(jar);
                 } else if (file.isDirectory()) {
@@ -115,6 +116,7 @@ public class Generator {
         for (File file : jars) {
             if (file.exists()) {
                 if (file.isFile() && file.getName().endsWith(".jar")) {
+                    System.out.println("▶ -super -> " + file);
                     JarFile jar = JarFile.readJar(file.getAbsolutePath());
                     ClassRepo.cacheSuperJarFile(jar);
                 } else if (file.isDirectory()) {
