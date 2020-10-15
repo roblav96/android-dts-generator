@@ -25,3 +25,4 @@ bin/
 jar-files
 node_modules
 super-files
+dts-generator/build.gradle
