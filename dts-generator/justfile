@@ -4,48 +4,91 @@
 build-jar :
 	./gradlew jar
 
-jar-files :
-	rm -rf jar-files
-	./gradlew dependencies --configuration testCompileOnly
-	./gradlew extractAllJars
-	tree -I '* (androidx.*|* (com.google.android.material_material_*' jar-files
 
-pre-out :
+
+dependencies-tree :
+	./gradlew dependencies --configuration testCompileOnly
+
+extract-all-jars :
+	rm -rf jar-files
+	./gradlew extractAllJars
+
+super-files :
+	rm -rf super-files
+	just dependencies-tree
+	just extract-all-jars
+	mv -v jar-files super-files
+	fd -uu --search-path=super-files --type=file --fixed-strings lint.jar --exec rm -rfv
+	tree -N -d super-files
+
+jar-files :
+	just dependencies-tree
+	just extract-all-jars
+	fd -uu --search-path=super-files --type=directory --max-depth=1 --exec rm -rf "jar-files/{/}"
+	tree -N -d jar-files
+
+
+
+reset-out :
+	rm -rfv out
+
+reset-out-android :
 	mkdir -p out
 	touch out/android.d.ts
 	truncate -s0 out/android.d.ts
 
-out input_jars :
-	just pre-out
+out-each :
+	just reset-out
+	for i in jar-files/*; do just out "$(basename "$i")"; done
+	tree -N out
+
+out input :
+	just reset-out-android
 	java -jar build/libs/dts-generator.jar \
 		-skip-declarations \
 		-super $ANDROID_HOME/platforms/android-29/android.jar \
+		-super super-files \
 		-super jar-files \
 		-input-generics ../libs/generics.txt \
-		-input jar-files/*{{input_jars}}*
+		-input "jar-files/{{input}}"
+	mv -v out/android.d.ts "out/$(echo "{{input}}" | tr -cs "[:alpha:]" "_").d.ts"
 
-watch-out input_jars :
-	watchexec --watch src --restart -- just _watch-out {{input_jars}}
-_watch-out input_jars :
+out-all :
+	just reset-out
+	just reset-out-android
+	java -jar build/libs/dts-generator.jar \
+		-skip-declarations \
+		-super $ANDROID_HOME/platforms/android-29/android.jar \
+		-super super-files \
+		-super jar-files \
+		-input-generics ../libs/generics.txt \
+		-input jar-files
+
+
+
+watch-src :
+	watchexec --watch src --restart -- just _watch-src
+_watch-src :
 	printf "\ec\e[3J"
 	just build-jar
-	just out {{input_jars}}
+	just out-all
 
-pbcopy :
-	pbcopy < out/android.d.ts
+
 
 android-platform version :
-	just pre-out
+	just reset-out
+	just reset-out-android
 	java -jar build/libs/dts-generator.jar \
 		-input-generics ../libs/generics.txt \
 		-input $ANDROID_HOME/platforms/android-{{version}}/android.jar
-	cp out/android.d.ts ../out/android-platform-{{version}}.d.ts
+	mv -v out/android.d.ts ../out/android-platform-{{version}}.d.ts
 
 androidx version :
-	just pre-out
+	just reset-out
+	just reset-out-android
 	java -jar build/libs/dts-generator.jar \
 		-skip-declarations \
 		-super $ANDROID_HOME/platforms/android-{{version}}/android.jar \
 		-input-generics ../libs/generics.txt \
-		-input jar-files
-	cp out/android.d.ts ../out/androidx-{{version}}.d.ts
+		-input super-files
+	mv -v out/android.d.ts ../out/androidx-{{version}}.d.ts
