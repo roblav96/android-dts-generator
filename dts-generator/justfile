@@ -51,7 +51,8 @@ out input :
 		-super jar-files \
 		-input-generics ../libs/generics.txt \
 		-input "jar-files/{{input}}"
-	mv -v out/android.d.ts "out/$(echo "{{input}}" | tr -cs "[:alpha:]" "_").d.ts"
+	mv -v out/android.d.ts "out/$(echo "{{input}}" | grep --only-matching "(.*)" | tr -d "()").d.ts"
+# mv -v out/android.d.ts "out/$(echo "{{input}}" | tr -cs "[:alpha:]" "_").d.ts"
 
 out-all :
 	just reset-out
@@ -67,11 +68,7 @@ out-all :
 
 
 watch-src :
-	watchexec --watch src --restart -- just _watch-src
-_watch-src :
-	printf "\ec\e[3J"
-	just build-jar
-	just out-all
+	watchexec --watch src --restart -- 'clear; just build-jar; just out-all'
 
 
 
