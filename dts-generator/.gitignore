@@ -6,3 +6,4 @@ local.properties
 *.jar
 /**/*.d.ts
 /jars/**/*.jar
+build.gradle
