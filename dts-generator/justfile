@@ -12,20 +12,29 @@ dependencies-tree :
 extract-all-jars :
 	rm -rf jar-files
 	./gradlew extractAllJars
+	find jar-files -type f -name lint.jar -print -delete
+	for i in jar-files/*; do mv "$i" "jar-files/$(basename "$i" | tr " ()" "_")_"; done
+# fd -uu --search-path=jar-files --type=file --glob "lint.jar" --exec rm -rfv
+
+super-files-tree :
+	tree -N -d super-files
 
 super-files :
 	rm -rf super-files
 	just dependencies-tree
 	just extract-all-jars
 	mv -v jar-files super-files
-	fd -uu --search-path=super-files --type=file --fixed-strings lint.jar --exec rm -rfv
-	tree -N -d super-files
+	just super-files-tree
+
+jar-files-tree :
+	tree -N -d jar-files
 
 jar-files :
 	just dependencies-tree
 	just extract-all-jars
-	fd -uu --search-path=super-files --type=directory --max-depth=1 --exec rm -rf "jar-files/{/}"
-	tree -N -d jar-files
+	for i in super-files/*; do rm -rf "jar-files/$(basename "$i")"; done
+	just jar-files-tree
+# fd -uu --search-path=super-files --type=directory --max-depth=1 --exec rm -rf "jar-files/{/}"
 
 
 
@@ -37,10 +46,13 @@ reset-out-android :
 	touch out/android.d.ts
 	truncate -s0 out/android.d.ts
 
+out-tree :
+	tree -N out
+
 out-each :
 	just reset-out
 	for i in jar-files/*; do just out "$(basename "$i")"; done
-	tree -N out
+	just out-tree
 
 out input :
 	just reset-out-android
@@ -53,6 +65,10 @@ out input :
 		-input "jar-files/{{input}}"
 	mv -v out/android.d.ts "out/$(echo "{{input}}" | grep --only-matching "(.*)" | tr -d "()").d.ts"
 # mv -v out/android.d.ts "out/$(echo "{{input}}" | tr -cs "[:alpha:]" "_").d.ts"
+
+out-manual library +jars :
+	@echo "library -> {{library}}"
+	@echo "jars -> {{jars}}"
 
 out-all :
 	just reset-out
@@ -68,7 +84,7 @@ out-all :
 
 
 watch-src :
-	watchexec --watch src --restart -- 'clear; just build-jar; just out-all'
+	watchexec --watch src --restart -- "clear; just build-jar; just out-all"
 
 
 
