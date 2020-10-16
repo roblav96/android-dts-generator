@@ -61,7 +61,7 @@ out-single input :
 		-super jar-files \
 		-input-generics ../libs/generics.txt \
 		-input "jar-files/{{input}}"
-	mv -v out/android.d.ts "out/$(echo "{{input}}" | grep --only-matching '__.*__' | sed -e 's/^__//' -e 's/__$//').d.ts"
+	mv -v out/android.d.ts "out/$(echo "{{input}}" | grep --only-matching '__.*__' | sed 's/__//g').d.ts"
 
 out-manual library +jars :
 	@echo "library -> {{library}}"
