@@ -14,7 +14,6 @@ extract-all-jars :
 	./gradlew extractAllJars
 	find jar-files -type f -name lint.jar -print -delete
 	for i in jar-files/*; do mv "$i" "jar-files/$(basename "$i" | tr " ()" "_")_"; done
-# fd -uu --search-path=jar-files --type=file --glob "lint.jar" --exec rm -rfv
 
 super-files-tree :
 	tree -N -d super-files
@@ -34,7 +33,6 @@ jar-files :
 	just extract-all-jars
 	for i in super-files/*; do rm -rf "jar-files/$(basename "$i")"; done
 	just jar-files-tree
-# fd -uu --search-path=super-files --type=directory --max-depth=1 --exec rm -rf "jar-files/{/}"
 
 
 
@@ -51,10 +49,10 @@ out-tree :
 
 out-each :
 	just reset-out
-	for i in jar-files/*; do just out "$(basename "$i")"; done
+	for i in jar-files/*; do just out-single "$(basename "$i")"; done
 	just out-tree
 
-out input :
+out-single input :
 	just reset-out-android
 	java -jar build/libs/dts-generator.jar \
 		-skip-declarations \
@@ -63,8 +61,7 @@ out input :
 		-super jar-files \
 		-input-generics ../libs/generics.txt \
 		-input "jar-files/{{input}}"
-	mv -v out/android.d.ts "out/$(echo "{{input}}" | grep --only-matching "(.*)" | tr -d "()").d.ts"
-# mv -v out/android.d.ts "out/$(echo "{{input}}" | tr -cs "[:alpha:]" "_").d.ts"
+	mv -v out/android.d.ts "out/$(echo "{{input}}" | grep --only-matching '__.*__' | sed -e 's/^__//' -e 's/__$//').d.ts"
 
 out-manual library +jars :
 	@echo "library -> {{library}}"
@@ -80,6 +77,9 @@ out-all :
 		-super jar-files \
 		-input-generics ../libs/generics.txt \
 		-input jar-files
+
+out-export target :
+	cp -vr -t "{{target}}" out/*.d.ts
 
 
 
@@ -105,3 +105,15 @@ androidx version :
 		-input-generics ../libs/generics.txt \
 		-input super-files
 	mv -v out/android.d.ts ../out/androidx-{{version}}.d.ts
+
+
+
+
+
+# mv -v out/android.d.ts "out/$(echo "{{input}}" | rg --only-matching '__(.*)__' --replace '$1').d.ts"
+# mv -v out/android.d.ts "out/$(echo "{{input}}" | sed -E 's/__(.*)__/\1/').d.ts"
+# mv -v out/android.d.ts "out/$(echo "{{input}}" | grep -E '__(.*)__').d.ts"
+# mv -v out/android.d.ts "out/$(echo "{{input}}" | grep --only-matching '__.*__' | sed -e 's#^__##' -e 's#__$##').d.ts"
+# mv -v out/android.d.ts "out/$(echo "{{input}}" | tr -cs "[:alpha:]" "_").d.ts"
+# fd -uu --search-path=super-files --type=directory --max-depth=1 --exec rm -rf "jar-files/{/}"
+# fd -uu --search-path=jar-files --type=file --glob "lint.jar" --exec rm -rfv
