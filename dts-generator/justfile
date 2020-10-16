@@ -50,6 +50,7 @@ out-tree :
 out-each :
 	just reset-out
 	for i in jar-files/*; do just out-single "$(basename "$i")"; done
+	cp -r -t ../out out/*.d.ts
 	just out-tree
 
 out-single input :
@@ -63,7 +64,7 @@ out-single input :
 		-input "jar-files/{{input}}"
 	mv -v out/android.d.ts "out/$(echo "{{input}}" | grep --only-matching '__.*__' | sed 's/__//g').d.ts"
 
-out-manual library +jars :
+out-multi output +inputs :
 	just reset-out
 	just reset-out-android
 	java -jar build/libs/dts-generator.jar \
@@ -72,8 +73,8 @@ out-manual library +jars :
 		-super super-files \
 		-super jar-files \
 		-input-generics ../libs/generics.txt \
-		-input {{jars}}
-	mv -v out/android.d.ts "out/{{library}}.d.ts"
+		-input {{inputs}}
+	mv -v out/android.d.ts "out/{{output}}.d.ts"
 	just out-tree
 
 out-all :
@@ -86,8 +87,10 @@ out-all :
 		-super jar-files \
 		-input-generics ../libs/generics.txt \
 		-input jar-files
+	just out-tree
 
 out-export target :
+	just out-tree
 	cp -vr -t "{{target}}" out/*.d.ts
 
 
