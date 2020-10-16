@@ -64,8 +64,17 @@ out-single input :
 	mv -v out/android.d.ts "out/$(echo "{{input}}" | grep --only-matching '__.*__' | sed 's/__//g').d.ts"
 
 out-manual library +jars :
-	@echo "library -> {{library}}"
-	@echo "jars -> {{jars}}"
+	just reset-out
+	just reset-out-android
+	java -jar build/libs/dts-generator.jar \
+		-skip-declarations \
+		-super $ANDROID_HOME/platforms/android-29/android.jar \
+		-super super-files \
+		-super jar-files \
+		-input-generics ../libs/generics.txt \
+		-input {{jars}}
+	mv -v out/android.d.ts "out/{{library}}.d.ts"
+	just out-tree
 
 out-all :
 	just reset-out
