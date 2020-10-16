@@ -3,7 +3,7 @@ apply plugin: 'java-library'
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 
-def version = "3.0.0"
+def version = "3.0.1"
 
 project.ext.extractedDependenciesDir = "jar-files"
 if(project.hasProperty("jarsOutput")) {
