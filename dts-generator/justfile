@@ -10,7 +10,7 @@ dependencies-tree :
 	./gradlew dependencies --configuration testCompileOnly
 
 extract-all-jars :
-	rm -rf jar-files
+	rm -r -f jar-files
 	./gradlew extractAllJars
 	find jar-files -type f -name lint.jar -print -delete
 	for i in jar-files/*; do mv "$i" "jar-files/$(basename "$i" | tr " ()" "_")_"; done
@@ -19,10 +19,10 @@ super-files-tree :
 	tree -N -d super-files
 
 super-files :
-	rm -rf super-files
+	rm -r -f super-files
 	just dependencies-tree
 	just extract-all-jars
-	mv -v jar-files super-files
+	mv -f -v jar-files super-files
 	just super-files-tree
 
 jar-files-tree :
@@ -31,13 +31,13 @@ jar-files-tree :
 jar-files :
 	just dependencies-tree
 	just extract-all-jars
-	for i in super-files/*; do rm -rf "jar-files/$(basename "$i")"; done
+	for i in super-files/*; do rm -r -f "jar-files/$(basename "$i")"; done
 	just jar-files-tree
 
 
 
 reset-out :
-	rm -rfv out
+	rm -r -f -v out
 
 reset-out-android :
 	mkdir -p out
@@ -50,31 +50,31 @@ out-tree :
 out-each :
 	just reset-out
 	for i in jar-files/*; do just out-single "$(basename "$i")"; done
-	cp -r -t ../out out/*.d.ts
+	cp -f -r -v -t ../out out/*.d.ts
 	just out-tree
 
 out-single input :
 	just reset-out-android
 	java -jar build-tools/dts-generator.jar \
 		-skip-declarations \
+		-input-generics ../libs/generics.txt \
 		-super $ANDROID_HOME/platforms/android-29/android.jar \
 		-super super-files \
 		-super jar-files \
-		-input-generics ../libs/generics.txt \
 		-input "jar-files/{{input}}"
-	mv -v out/android.d.ts "out/$(echo "{{input}}" | grep --only-matching '__.*__' | sed 's/__//g').d.ts"
+	mv -f -v out/android.d.ts "out/$(echo "{{input}}" | grep --only-matching '__.*__' | sed 's/__//g').d.ts"
 
 out-multi output +inputs :
 	just reset-out
 	just reset-out-android
 	java -jar build-tools/dts-generator.jar \
 		-skip-declarations \
+		-input-generics ../libs/generics.txt \
 		-super $ANDROID_HOME/platforms/android-29/android.jar \
 		-super super-files \
 		-super jar-files \
-		-input-generics ../libs/generics.txt \
 		-input {{inputs}}
-	mv -v out/android.d.ts "out/{{output}}.d.ts"
+	mv -f -v out/android.d.ts "out/{{output}}.d.ts"
 	just out-tree
 
 out-all :
@@ -82,16 +82,16 @@ out-all :
 	just reset-out-android
 	java -jar build-tools/dts-generator.jar \
 		-skip-declarations \
+		-input-generics ../libs/generics.txt \
 		-super $ANDROID_HOME/platforms/android-29/android.jar \
 		-super super-files \
 		-super jar-files \
-		-input-generics ../libs/generics.txt \
 		-input jar-files
 	just out-tree
 
 out-export target :
 	just out-tree
-	cp -vr -t "{{target}}" out/*.d.ts
+	cp -f -r -v -t "{{target}}" out/*.d.ts
 
 
 
@@ -104,19 +104,18 @@ android-platform version :
 	just reset-out
 	just reset-out-android
 	java -jar build-tools/dts-generator.jar \
-		-input-generics ../libs/generics.txt \
 		-input $ANDROID_HOME/platforms/android-{{version}}/android.jar
-	mv -v out/android.d.ts ../out/android-platform-{{version}}.d.ts
+	mv -f -v out/android.d.ts ../out/android-platform-{{version}}.d.ts
 
 androidx version :
 	just reset-out
 	just reset-out-android
 	java -jar build-tools/dts-generator.jar \
 		-skip-declarations \
-		-super $ANDROID_HOME/platforms/android-{{version}}/android.jar \
 		-input-generics ../libs/generics.txt \
+		-super $ANDROID_HOME/platforms/android-{{version}}/android.jar \
 		-input super-files
-	mv -v out/android.d.ts ../out/androidx-{{version}}.d.ts
+	mv -f -v out/android.d.ts ../out/androidx-{{version}}.d.ts
 
 
 
