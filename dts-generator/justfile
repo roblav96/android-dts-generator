@@ -55,7 +55,7 @@ out-each :
 
 out-single input :
 	just reset-out-android
-	java -jar build/libs/dts-generator.jar \
+	java -jar build-tools/dts-generator.jar \
 		-skip-declarations \
 		-super $ANDROID_HOME/platforms/android-29/android.jar \
 		-super super-files \
@@ -67,7 +67,7 @@ out-single input :
 out-multi output +inputs :
 	just reset-out
 	just reset-out-android
-	java -jar build/libs/dts-generator.jar \
+	java -jar build-tools/dts-generator.jar \
 		-skip-declarations \
 		-super $ANDROID_HOME/platforms/android-29/android.jar \
 		-super super-files \
@@ -80,7 +80,7 @@ out-multi output +inputs :
 out-all :
 	just reset-out
 	just reset-out-android
-	java -jar build/libs/dts-generator.jar \
+	java -jar build-tools/dts-generator.jar \
 		-skip-declarations \
 		-super $ANDROID_HOME/platforms/android-29/android.jar \
 		-super super-files \
@@ -103,7 +103,7 @@ watch-src :
 android-platform version :
 	just reset-out
 	just reset-out-android
-	java -jar build/libs/dts-generator.jar \
+	java -jar build-tools/dts-generator.jar \
 		-input-generics ../libs/generics.txt \
 		-input $ANDROID_HOME/platforms/android-{{version}}/android.jar
 	mv -v out/android.d.ts ../out/android-platform-{{version}}.d.ts
@@ -111,7 +111,7 @@ android-platform version :
 androidx version :
 	just reset-out
 	just reset-out-android
-	java -jar build/libs/dts-generator.jar \
+	java -jar build-tools/dts-generator.jar \
 		-skip-declarations \
 		-super $ANDROID_HOME/platforms/android-{{version}}/android.jar \
 		-input-generics ../libs/generics.txt \
