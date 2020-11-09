@@ -1,0 +1,18 @@
+{
+	"compilerOptions": {
+		"baseUrl": ".",
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
+		"lib": ["esnext"],
+		"module": "esnext",
+		"moduleResolution": "node",
+		"noEmitHelpers": true,
+		"target": "es2017"
+	},
+	"include": [
+		"out/android-platform-29.d.ts",
+		"out/androidx-29.d.ts",
+		"node_modules/@nativescript/types-android/lib/android/common.d.ts",
+		"dts-generator/out/*.d.ts"
+	]
+}
