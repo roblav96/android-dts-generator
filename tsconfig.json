@@ -3,10 +3,11 @@
 		"baseUrl": ".",
 		"emitDecoratorMetadata": true,
 		"experimentalDecorators": true,
-		"lib": ["esnext"],
+		"lib": ["es2017"],
 		"module": "esnext",
 		"moduleResolution": "node",
 		"noEmitHelpers": true,
+		"noErrorTruncation": true,
 		"target": "es2017"
 	},
 	"include": [
