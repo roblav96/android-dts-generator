@@ -89,7 +89,7 @@ out-all :
 		-input jar-files
 	just out-tree
 
-out-export target :
+export-out target :
 	just out-tree
 	cp -f -r -v -t "{{target}}" out/*.d.ts
 
