@@ -55,7 +55,7 @@ out-each :
 
 out-single input :
 	just reset-out-android
-	java -jar build-tools/dts-generator.jar \
+	java -jar build/libs/dts-generator.jar \
 		-skip-declarations \
 		-input-generics ../libs/generics.txt \
 		-super $ANDROID_HOME/platforms/android-29/android.jar \
@@ -67,7 +67,7 @@ out-single input :
 out-multi output +inputs :
 	just reset-out
 	just reset-out-android
-	java -jar build-tools/dts-generator.jar \
+	java -jar build/libs/dts-generator.jar \
 		-skip-declarations \
 		-input-generics ../libs/generics.txt \
 		-super $ANDROID_HOME/platforms/android-29/android.jar \
@@ -80,7 +80,7 @@ out-multi output +inputs :
 out-all :
 	just reset-out
 	just reset-out-android
-	java -jar build-tools/dts-generator.jar \
+	java -jar build/libs/dts-generator.jar \
 		-skip-declarations \
 		-input-generics ../libs/generics.txt \
 		-super $ANDROID_HOME/platforms/android-29/android.jar \
@@ -96,21 +96,21 @@ export-out target :
 
 
 watch-src :
-	watchexec --watch src --restart -- "clear; just build-jar; just out-all"
+	watchexec --watch src --restart -- 'clear; just build-jar; just out-all'
 
 
 
 android-platform version :
 	just reset-out
 	just reset-out-android
-	java -jar build-tools/dts-generator.jar \
+	java -jar build/libs/dts-generator.jar \
 		-input $ANDROID_HOME/platforms/android-{{version}}/android.jar
 	mv -f -v out/android.d.ts ../out/android-platform-{{version}}.d.ts
 
 androidx version :
 	just reset-out
 	just reset-out-android
-	java -jar build-tools/dts-generator.jar \
+	java -jar build/libs/dts-generator.jar \
 		-skip-declarations \
 		-input-generics ../libs/generics.txt \
 		-super $ANDROID_HOME/platforms/android-{{version}}/android.jar \
