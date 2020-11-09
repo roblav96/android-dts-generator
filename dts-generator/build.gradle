@@ -13,7 +13,6 @@ if(project.hasProperty("jarsOutput")) {
 repositories {
     google()
     jcenter()
-    mavenCentral()
     maven { url "https://jitpack.io" }
 }
 
