@@ -1,6 +1,10 @@
 #!/usr/bin/env just --justfile
 # https://github.com/casey/just
 
+set shell := ["bash", "-cu"]
+
+
+
 build-jar :
 	./gradlew jar
 
@@ -35,6 +39,10 @@ jar-files :
 	just jar-files-tree
 
 
+
+reset :
+	rm -r -f -v out jar-files super-files
+	mkdir -p -v out jar-files super-files
 
 reset-out :
 	rm -r -f -v out
@@ -95,11 +103,13 @@ out-tsc :
 export-out target :
 	just out-tree
 	cp -f -r -v -t "{{target}}" out/*.d.ts
+# rm -r -f -v "{{target}}"
+# mkdir -p -v "{{target}}"
 
 
 
 watch-src :
-	watchexec --watch src --restart -- 'clear; just build-jar; just out-all'
+	watchexec --watch src --restart -- 'tput clear; just build-jar; just out-all'
 
 
 
