@@ -111,7 +111,7 @@ export-out target :
 
 
 watch-src :
-	watchexec --watch src --restart -- 'tput clear; just build-jar; just out-all'
+	watchexec --watch src --restart -- 'tput clear && just build-jar && just out-all && bat out/android.d.ts'
 
 
 
