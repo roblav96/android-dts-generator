@@ -41,16 +41,16 @@ jar-files :
 
 
 reset :
-	rm -r -f -v out jar-files super-files
-	mkdir -p -v out jar-files super-files
+	@rm -r -f out jar-files super-files
+	@mkdir -p out jar-files super-files
 
 reset-out :
-	rm -r -f -v out
-	mkdir -p -v out
+	@rm -r -f out
+	@mkdir -p out
 
 reset-out-android :
-	touch out/android.d.ts
-	truncate -s0 out/android.d.ts
+	@touch out/android.d.ts
+	@truncate -s0 out/android.d.ts
 
 out-tree :
 	tree -N out
@@ -65,6 +65,7 @@ out-each :
 			just out-single "$(basename "$i")" "$output"; \
 		fi; \
 	done
+	@rm -f out/android.d.ts
 	just out-tree
 
 out-single input output :
