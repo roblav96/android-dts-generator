@@ -880,17 +880,17 @@ public class DtsApi {
         return m.getName().equals("<init>");
     }
 
-    private String fixKotlinName(String name) {
+    private String fixKtName(String name) {
         int index = name.indexOf('-');
         if (index > 0) {
-            System.out.println("\n\n▶ name -> " + name);
+            // System.out.println("\n\n▶ name -> " + name);
             name = name.substring(0, index);
-            System.out.println("-> name ▶ " + name);
+            // System.out.println("-> name ▶ " + name);
         }
         return name;
     }
     private String getMethodName(Method m) {
-        String name = m.getName();
+        String name = fixKtName(m.getName());
 
         if (isConstructor(m)) {
             name = "constructor";
