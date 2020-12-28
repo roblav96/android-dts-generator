@@ -638,7 +638,7 @@ public class DtsApi {
 
     //method related
     private void processMethod(Method method, JavaClass clazz, TypeDefinition typeDefinition, Set<String> methodsSet) {
-        String name = method.getName();
+        String name = fixKotlinName(method.getName());
 
         if (isPrivateGoogleApiMember(name)) return;
 
@@ -660,7 +660,7 @@ public class DtsApi {
         //generate base method content
         if (baseMethodNames.contains(name)) {
             for (Method baseMethod : baseMethods) {
-                if (baseMethod.getName().equals(name)) {
+                if (fixKotlinName(baseMethod.getName()).equals(name)) {
                     String sig = getMethodFullSignature(baseMethod);
                     if (!mapNameMethod.containsKey(sig)) {
                         mapNameMethod.put(sig, baseMethod);
@@ -803,7 +803,7 @@ public class DtsApi {
     }
 
     private void cacheMethodBySignature(Method m) {
-        String methodName = m.getName();
+        String methodName = fixKotlinName(m.getName());
         if (!mapNameMethod.containsKey(methodName)) {
             mapNameMethod.put(methodName, m);
         }
@@ -831,7 +831,7 @@ public class DtsApi {
                             }
 
                             baseMethods.add(m);
-                            baseMethodNames.add(m.getName());
+                            baseMethodNames.add(fixKotlinName(m.getName()));
                         }
                     }
 
@@ -840,7 +840,7 @@ public class DtsApi {
                     for (Method m : currClass.getMethods()) {
                         if (!m.isSynthetic() && (m.isPublic() || m.isProtected())) {
                             baseMethods.add(m);
-                            baseMethodNames.add(m.getName());
+                            baseMethodNames.add(fixKotlinName(m.getName()));
                         }
                     }
                 }
@@ -872,16 +872,25 @@ public class DtsApi {
     }
 
     private String getMethodFullSignature(Method m) {
-        String sig = m.getName() + m.getSignature();
+        String sig = fixKotlinName(m.getName()) + m.getSignature();
         return sig;
     }
 
     private boolean isConstructor(Method m) {
-        return m.getName().equals("<init>");
+        return fixKotlinName(m.getName()).equals("<init>");
     }
 
+    private String fixKotlinName(String name) {
+        int index = name.indexOf('-');
+        if (index > 0) {
+            System.out.println("\n\n▶ name -> " + name);
+            name = name.substring(0, index);
+            System.out.println("-> name ▶ " + name);
+        }
+        return name;
+    }
     private String getMethodName(Method m) {
-        String name = m.getName();
+        String name = fixKotlinName(m.getName());
 
         if (isConstructor(m)) {
             name = "constructor";
@@ -895,14 +904,14 @@ public class DtsApi {
         // System.out.println("\n\n▶ " + m.getName() + " -> " + m.toString());
 
         List<String> params = Arrays.asList();
-        Pattern pattern = Pattern.compile("\\s" + Pattern.quote(m.getName()) + "\\((.*)\\)\\s");
+        Pattern pattern = Pattern.compile("\\s" + Pattern.quote(fixKotlinName(m.getName())) + "\\((.*)\\)\\s");
         Matcher matcher = pattern.matcher(m.toString() + " ");
         if (matcher.find()) {
             params = Arrays.asList(matcher.group(1).split("\\,\\s"));
         }
         // System.out.println("▶ params -> " + params);
 
-        String realKey = clazz.getClassName() + "." + m.getName() + m.getSignature();
+        String realKey = clazz.getClassName() + "." + fixKotlinName(m.getName()) + m.getSignature();
         // System.out.println("▶ realKey -> " + realKey);
         List<LocalVariable> lvars = Arrays.asList();
         LocalVariableTable lvTable = m.getLocalVariableTable();
@@ -980,7 +989,7 @@ public class DtsApi {
 
     //field related
     private void processField(Field f, JavaClass clazz, TypeDefinition typeDefinition) {
-        String fieldName = f.getName();
+        String fieldName = fixKotlinName(f.getName());
 
         if (isPrivateGoogleApiMember(fieldName)) return;
 
@@ -989,7 +998,7 @@ public class DtsApi {
         if (f.isStatic()) {
             sbContent.append("static ");
         }
-        sbContent.appendln(f.getName() + ": " + getTypeScriptTypeFromJavaType(this.getFieldType(f), typeDefinition) + ";");
+        sbContent.appendln(fixKotlinName(f.getName()) + ": " + getTypeScriptTypeFromJavaType(this.getFieldType(f), typeDefinition) + ";");
     }
 
     private void addClassField(JavaClass clazz) {
@@ -1160,11 +1169,11 @@ public class DtsApi {
         for (Method m : methods) {
             if ((m.isPublic() || m.isProtected()) && !m.isSynthetic()) {
                 members.add(m);
-                methodNames.add(m.getName());
+                methodNames.add(fixKotlinName(m.getName()));
             }
         }
         for (Field f : javaClass.getFields()) {
-            if ((f.isPublic() || f.isProtected()) && !f.isSynthetic() && !methodNames.contains(f.getName())) {
+            if ((f.isPublic() || f.isProtected()) && !f.isSynthetic() && !methodNames.contains(fixKotlinName(f.getName()))) {
                 members.add(f);
             }
         }
@@ -1237,7 +1246,7 @@ public class DtsApi {
         Field.setComparator(new BCELComparator() {
             @Override
             public boolean equals(Object o, Object o1) {
-                return ((Field) o).getName().equals(((Field) o1).getName());
+                return fixKotlinName(((Field) o).getName()).equals(fixKotlinName(((Field) o1).getName()));
             }
 
             @Override
