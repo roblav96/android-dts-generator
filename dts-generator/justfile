@@ -78,7 +78,7 @@ out-single input output :
 		-super jar-files \
 		-input "jar-files/{{input}}"
 	sed -i '/<clinit>/d' out/android.d.ts
-	sed -i 's/<set-?>/param0/' out/android.d.ts
+	sed -i 's/<set-?>:/param0:/' out/android.d.ts
 	mv -f -v out/android.d.ts "out/{{output}}"
 	cp -f -v -t ../out "out/{{output}}"
 
@@ -93,7 +93,7 @@ out-multi output +inputs :
 		-super jar-files \
 		-input {{inputs}}
 	sed -i '/<clinit>/d' out/android.d.ts
-	sed -i 's/<set-?>/param0/' out/android.d.ts
+	sed -i 's/<set-?>:/param0:/' out/android.d.ts
 	mv -f -v out/android.d.ts "out/{{output}}.d.ts"
 	just out-tree
 
@@ -131,6 +131,7 @@ android-platform version :
 	java -jar build/libs/dts-generator.jar \
 		-input $ANDROID_HOME/platforms/android-{{version}}/android.jar
 	sed -i '/<clinit>/d' out/android.d.ts
+	sed -i 's/<set-?>:/param0:/' out/android.d.ts
 	mv -f -v out/android.d.ts ../out/android-platform-{{version}}.d.ts
 
 androidx version :
@@ -142,6 +143,7 @@ androidx version :
 		-super $ANDROID_HOME/platforms/android-{{version}}/android.jar \
 		-input super-files
 	sed -i '/<clinit>/d' out/android.d.ts
+	sed -i 's/<set-?>:/param0:/' out/android.d.ts
 	mv -f -v out/android.d.ts ../out/androidx-{{version}}.d.ts
 
 
