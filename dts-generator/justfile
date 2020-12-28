@@ -46,9 +46,9 @@ reset :
 
 reset-out :
 	rm -r -f -v out
+	mkdir -p -v out
 
 reset-out-android :
-	mkdir -p out
 	touch out/android.d.ts
 	truncate -s0 out/android.d.ts
 
@@ -57,11 +57,17 @@ out-tree :
 
 out-each :
 	just reset-out
-	for i in jar-files/*; do just out-single "$(basename "$i")"; done
-	cp -f -r -v -t ../out out/*.d.ts
+	for i in jar-files/*; do \
+		output="$(basename "$i" | grep --only-matching '__.*__' | sed 's/__//g').d.ts"; \
+		if [[ -e "../out/$output" ]]; then \
+			cp -f -v -t out "../out/$output"; \
+		else \
+			just out-single "$(basename "$i")" "$output"; \
+		fi; \
+	done
 	just out-tree
 
-out-single input :
+out-single input output :
 	just reset-out-android
 	java -jar build/libs/dts-generator.jar \
 		-skip-declarations \
@@ -71,8 +77,9 @@ out-single input :
 		-super jar-files \
 		-input "jar-files/{{input}}"
 	sed -i '/<clinit>/d' out/android.d.ts
-	mv -f -v out/android.d.ts "out/$(echo "{{input}}" | grep --only-matching '__.*__' | sed 's/__//g').d.ts"
 	sed -i 's/<set-?>/param0/' out/android.d.ts
+	mv -f -v out/android.d.ts "out/{{output}}"
+	cp -f -v -t ../out "out/{{output}}"
 
 out-multi output +inputs :
 	just reset-out
