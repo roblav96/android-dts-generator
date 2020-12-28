@@ -72,6 +72,7 @@ out-single input :
 		-input "jar-files/{{input}}"
 	sed -i '/<clinit>/d' out/android.d.ts
 	mv -f -v out/android.d.ts "out/$(echo "{{input}}" | grep --only-matching '__.*__' | sed 's/__//g').d.ts"
+	sed -i 's/<set-?>/param0/' out/android.d.ts
 
 out-multi output +inputs :
 	just reset-out
@@ -84,6 +85,7 @@ out-multi output +inputs :
 		-super jar-files \
 		-input {{inputs}}
 	sed -i '/<clinit>/d' out/android.d.ts
+	sed -i 's/<set-?>/param0/' out/android.d.ts
 	mv -f -v out/android.d.ts "out/{{output}}.d.ts"
 	just out-tree
 
