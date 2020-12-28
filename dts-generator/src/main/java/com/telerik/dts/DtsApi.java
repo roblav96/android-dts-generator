@@ -880,17 +880,15 @@ public class DtsApi {
         return m.getName().equals("<init>");
     }
 
-    private String fixKtName(String name) {
+    private String getMethodName(Method m) {
+        String name = m.getName();
+
         int index = name.indexOf('-');
         if (index > 0) {
             // System.out.println("\n\n▶ name -> " + name);
             name = name.substring(0, index);
             // System.out.println("-> name ▶ " + name);
         }
-        return name;
-    }
-    private String getMethodName(Method m) {
-        String name = fixKtName(m.getName());
 
         if (isConstructor(m)) {
             name = "constructor";
