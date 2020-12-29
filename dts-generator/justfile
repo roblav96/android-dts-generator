@@ -52,12 +52,14 @@ reset-out-android :
 	@touch out/android.d.ts
 	@truncate -s0 out/android.d.ts
 
-fix-out-android :
-	sed -i '/<clinit>/d' out/android.d.ts
-	sed -i 's/^export class module-info /declare class ModuleInfo /' out/android.d.ts
-	sed -i 's/java.lang.Class<module-info>/java.lang.Class<ModuleInfo>/' out/android.d.ts
-	sed -i 's/<set-?>:/param0:/' out/android.d.ts
-	sed -i 's/<any;/<any>;/' out/android.d.ts
+fix-out-android output :
+	sed -i -e '/<clinit>/d' out/android.d.ts
+	sed -i -e 's/<set-?>:/param0:/' out/android.d.ts
+	sed -i -e 's/<any;/<any>;/' out/android.d.ts
+	sed -i -e 's/$.*(/(/' out/android.d.ts
+	sed -i -e 's/^export class module-info /declare class ModuleInfo /' -e 's/java.lang.Class<module-info>/java.lang.Class<ModuleInfo>/' out/android.d.ts
+# lib="$(echo "{{output}}" | grep --only-matching '_.*_' | sed -e 's/_//g' -e 's/-/_/g')"; \
+# [[ -n "$lib" ]] && echo \n"🌕 lib -> '$lib'" && sed -i -e 's/$$lib.*(/(/'
 
 out-tree :
 	tree -N out
@@ -65,7 +67,7 @@ out-tree :
 out-each :
 	just reset-out
 	for i in jar-files/*; do \
-		output="$(basename "$i" | grep --only-matching '__.*__' | sed 's/__//g').d.ts"; \
+		output="$(basename "$i" | grep --only-matching '__.*__' | sed -e 's/__//g').d.ts"; \
 		if [[ -e "../out/$output" ]]; then \
 			cp -f -v -t out "../out/$output"; \
 		else \
@@ -84,7 +86,7 @@ out-single input output :
 		-super super-files \
 		-super jar-files \
 		-input "jar-files/{{input}}"
-	just fix-out-android
+	just fix-out-android "{{output}}"
 	mv -f -v out/android.d.ts "out/{{output}}"
 	cp -f -v -t ../out "out/{{output}}"
 
@@ -98,7 +100,7 @@ out-multi output +inputs :
 		-super super-files \
 		-super jar-files \
 		-input {{inputs}}
-	just fix-out-android
+	just fix-out-android "{{output}}.d.ts"
 	mv -f -v out/android.d.ts "out/{{output}}.d.ts"
 	just out-tree
 
@@ -141,7 +143,7 @@ android-platform version :
 	just reset-out-android
 	java -jar build/libs/dts-generator.jar \
 		-input $ANDROID_HOME/platforms/android-{{version}}/android.jar
-	just fix-out-android
+	just fix-out-android "android-platform-{{version}}.d.ts"
 	mv -f -v out/android.d.ts ../out/android-platform-{{version}}.d.ts
 
 androidx version :
@@ -152,7 +154,7 @@ androidx version :
 		-input-generics ../libs/generics.txt \
 		-super $ANDROID_HOME/platforms/android-{{version}}/android.jar \
 		-input super-files
-	just fix-out-android
+	just fix-out-android "androidx-{{version}}.d.ts"
 	mv -f -v out/android.d.ts ../out/androidx-{{version}}.d.ts
 
 
