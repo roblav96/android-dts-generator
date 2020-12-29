@@ -134,7 +134,6 @@ on-watch-src :
 	just build-jar
 	just out-each
 	tsc --noEmit
-	bat out/android.d.ts
 
 
 
@@ -143,7 +142,6 @@ android-platform version :
 	just reset-out-android
 	java -jar build/libs/dts-generator.jar \
 		-input $ANDROID_HOME/platforms/android-{{version}}/android.jar
-	just fix-out-android "android-platform-{{version}}.d.ts"
 	mv -f -v out/android.d.ts ../out/android-platform-{{version}}.d.ts
 
 androidx version :
@@ -154,7 +152,6 @@ androidx version :
 		-input-generics ../libs/generics.txt \
 		-super $ANDROID_HOME/platforms/android-{{version}}/android.jar \
 		-input super-files
-	just fix-out-android "androidx-{{version}}.d.ts"
 	mv -f -v out/android.d.ts ../out/androidx-{{version}}.d.ts
 
 
