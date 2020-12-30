@@ -4,7 +4,7 @@
 		"emitDecoratorMetadata": true,
 		"experimentalDecorators": true,
 		"lib": ["es2017"],
-		"module": "esnext",
+		"module": "commonjs",
 		"moduleResolution": "node",
 		"noEmitHelpers": true,
 		"noErrorTruncation": true,
@@ -14,6 +14,7 @@
 		"../out/android-platform-29.d.ts",
 		"../out/androidx-29.d.ts",
 		"node_modules/@nativescript/types-android/lib/android/common.d.ts",
-		"out/*.d.ts"
+		"out/*.d.ts",
+		"*.ts"
 	]
 }
