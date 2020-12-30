@@ -15,6 +15,6 @@
 		"../out/androidx-29.d.ts",
 		"node_modules/@nativescript/types-android/lib/android/common.d.ts",
 		"out/*.d.ts",
-		"*.ts"
+		"src/*.ts"
 	]
 }

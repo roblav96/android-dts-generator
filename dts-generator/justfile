@@ -14,62 +14,55 @@ dependencies-tree :
 	./gradlew dependencies --configuration testCompileOnly
 
 extract-all-jars :
-	rm -r -f jar-files
+	just reset jar-files
 	./gradlew extractAllJars
 	find jar-files -type f -name lint.jar -print -delete
 	for i in jar-files/*; do mv "$i" "jar-files/$(basename "$i" | tr " ()" "_")_"; done
 
-super-files-tree :
-	tree -N -d super-files
-
 super-files :
-	rm -r -f super-files
+	just reset jar-files super-files
 	just dependencies-tree
 	just extract-all-jars
-	mv -f -v jar-files super-files
-	just super-files-tree
-
-jar-files-tree :
-	tree -N -d jar-files
+	mv jar-files/* super-files
+	tree -N -d super-files
 
 jar-files :
+	just reset jar-files
 	just dependencies-tree
 	just extract-all-jars
 	for i in super-files/*; do rm -r -f "jar-files/$(basename "$i")"; done
-	just jar-files-tree
+	tree -N -d jar-files
 
-
-
-reset :
-	@rm -r -f out jar-files super-files
-	@mkdir -p out jar-files super-files
-
-reset-out :
-	@rm -r -f out
-	@mkdir -p out
-
-reset-out-android :
-	@touch out/android.d.ts
-	@truncate -s0 out/android.d.ts
-
-fix-out-android output :
-	sed -i -e '/<clinit>/d' out/android.d.ts
-	sed -i -e 's/<set-?>:/param0:/' out/android.d.ts
-	sed -i -e 's/<any;/<any>;/' out/android.d.ts
-	sed -i -e 's/$.*(/(/' out/android.d.ts
-	sed -i -e 's/^export class module-info /declare class ModuleInfo /' -e 's/java.lang.Class<module-info>/java.lang.Class<ModuleInfo>/' out/android.d.ts
+out-jar-files :
+	just out-each
+	sed -i -e '/<clinit>/d' out/*.d.ts
+	sed -i -e 's/<set-?>:/param0:/' out/*.d.ts
+	sed -i -e 's/<any;/<any>;/' out/*.d.ts
+	sed -i -e 's/$.*(/(/' out/*.d.ts
+	sed -i -e 's/^export class module-info /declare class ModuleInfo /' -e 's/java.lang.Class<module-info>/java.lang.Class<ModuleInfo>/' out/*.d.ts
 # lib="$(echo "{{output}}" | grep --only-matching '_.*_' | sed -e 's/_//g' -e 's/-/_/g')"; \
 # [[ -n "$lib" ]] && echo \n"🌕 lib -> '$lib'" && sed -i -e 's/$$lib.*(/(/'
+
+
+
+reset +folders="out jar-files super-files" :
+	rm -r -f {{folders}}
+	mkdir -p {{folders}}
+
+reset-android :
+	@mkdir -p out
+	@touch out/android.d.ts
+	@truncate -s0 out/android.d.ts
 
 out-tree :
 	tree -N out
 
 out-each :
-	just reset-out
+	just reset out
 	for i in jar-files/*; do \
 		output="$(basename "$i" | grep --only-matching '__.*__' | sed -e 's/__//g').d.ts"; \
 		if [[ -e "../out/$output" ]]; then \
-			cp -f -v -t out "../out/$output"; \
+			cp -f -v "../out/$output" out; \
 		else \
 			just out-single "$(basename "$i")" "$output"; \
 		fi; \
@@ -78,7 +71,7 @@ out-each :
 	just out-tree
 
 out-single input output :
-	just reset-out-android
+	just reset-android
 	-java -jar build/libs/dts-generator.jar \
 		-skip-declarations \
 		-input-generics ../libs/generics.txt \
@@ -86,13 +79,14 @@ out-single input output :
 		-super super-files \
 		-super jar-files \
 		-input "jar-files/{{input}}"
-	just fix-out-android "{{output}}"
-	mv -f -v out/android.d.ts "out/{{output}}"
-	cp -f -v -t ../out "out/{{output}}"
+	if [[ ! "0" == "$(du -b out/android.d.ts | awk '{print $1}')" ]]; then \
+		mv out/android.d.ts "out/{{output}}"; \
+		cp -f "out/{{output}}" ../out; \
+	fi
 
 out-multi output +inputs :
-	just reset-out
-	just reset-out-android
+	just reset out
+	just reset-android
 	-java -jar build/libs/dts-generator.jar \
 		-skip-declarations \
 		-input-generics ../libs/generics.txt \
@@ -100,13 +94,12 @@ out-multi output +inputs :
 		-super super-files \
 		-super jar-files \
 		-input {{inputs}}
-	just fix-out-android "{{output}}.d.ts"
-	mv -f -v out/android.d.ts "out/{{output}}.d.ts"
+	mv out/android.d.ts "out/{{output}}.d.ts"
 	just out-tree
 
 out-all :
-	just reset-out
-	just reset-out-android
+	just reset out
+	just reset-android
 	java -jar build/libs/dts-generator.jar \
 		-skip-declarations \
 		-input-generics ../libs/generics.txt \
@@ -138,25 +131,26 @@ on-watch-src :
 
 
 android-platform version :
-	just reset-out
-	just reset-out-android
+	just reset out
+	just reset-android
 	java -jar build/libs/dts-generator.jar \
 		-input $ANDROID_HOME/platforms/android-{{version}}/android.jar
-	node --require ts-node/register/transpile-only android-platform.ts
-	rm -r -f -v out/android.d.ts out/android-declarations.d.ts ../out/android-platform-{{version}}
-	mkdir -p -v ../out/android-platform-{{version}}
-	mv -f -v out/* ../out/android-platform-{{version}}
+	node --require ts-node/register/transpile-only src/android-platform.ts
+	rm -r -f out/android.d.ts out/android-declarations.d.ts ../out/android-platform-{{version}}
+	mkdir -p ../out/android-platform-{{version}}
+	mv out/* ../out/android-platform-{{version}}
+	tree -N ../out/android-platform-{{version}}
 
 androidx version :
-	just reset-out
-	just reset-out-android
-	java -jar build/libs/dts-generator.jar \
-		-skip-declarations \
-		-input-generics ../libs/generics.txt \
-		-super $ANDROID_HOME/platforms/android-{{version}}/android.jar \
-		-input super-files
-	mkdir -p -v ../out/androidx
-	mv -f -v out/android.d.ts ../out/androidx/androidx-{{version}}.d.ts
+	rm -r -f jar-files/*
+	mv super-files/* jar-files
+	just reset out
+	just out-each
+	mv jar-files/* super-files
+	rm -r -f ../out/androidx-{{version}}
+	mkdir -p ../out/androidx-{{version}}
+	mv out/* ../out/androidx-{{version}}
+	tree -N ../out/androidx-{{version}}
 
 
 
