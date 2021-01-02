@@ -130,7 +130,7 @@ on-watch-src :
 
 
 
-android-platform version :
+android-platform version="29" :
 	just reset out
 	just reset-android
 	java -jar build/libs/dts-generator.jar \
@@ -141,7 +141,7 @@ android-platform version :
 	mv out/* ../out/android-platform-{{version}}
 	tree -N ../out/android-platform-{{version}}
 
-androidx version :
+androidx version="29" :
 	rm -r -f jar-files/*
 	mv super-files/* jar-files
 	just reset out
