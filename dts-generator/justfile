@@ -34,6 +34,7 @@ jar-files :
 	tree -N -d jar-files
 
 out-jar-files :
+	just jar-files
 	just out-each
 	sed -i -e '/<clinit>/d' out/*.d.ts
 	sed -i -e 's/<set-?>:/param0:/' out/*.d.ts
