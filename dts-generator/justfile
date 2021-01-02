@@ -10,7 +10,7 @@ build-jar :
 
 
 
-dependencies-tree :
+dependencies :
 	./gradlew dependencies --configuration testCompileOnly
 
 extract-all-jars :
@@ -21,14 +21,14 @@ extract-all-jars :
 
 super-files :
 	just reset jar-files super-files
-	just dependencies-tree
+	just dependencies
 	just extract-all-jars
 	mv jar-files/* super-files
 	tree -N -d super-files
 
 jar-files :
 	just reset jar-files
-	just dependencies-tree
+	just dependencies
 	just extract-all-jars
 	for i in super-files/*; do rm -r -f "jar-files/$(basename "$i")"; done
 	tree -N -d jar-files
