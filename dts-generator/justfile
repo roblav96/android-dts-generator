@@ -143,6 +143,7 @@ android-platform version="29" :
 	tree -N ../out/android-platform-{{version}}
 
 androidx version="29" :
+	just super-files
 	rm -r -f jar-files/*
 	mv super-files/* jar-files
 	just reset out
