@@ -3,10 +3,8 @@
 
 set shell := ["bash", "-cu"]
 
-
-
-build-jar :
-	./gradlew jar
+_default :
+	@echo && just --dump
 
 
 
@@ -118,13 +116,13 @@ export-out target :
 
 
 
-out-tsc :
-	tsc --noEmit --listFilesOnly --diagnostics
+build-jar :
+	./gradlew jar
 
 watch-src :
 	watchexec --watch src --restart -- 'just on-watch-src'
 on-watch-src :
-	printf "\ec\e[3J"
+	tput clear
 	just build-jar
 	just out-each
 	tsc --noEmit
