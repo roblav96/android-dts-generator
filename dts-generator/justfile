@@ -54,7 +54,7 @@ reset-android :
 	@truncate -s0 out/android.d.ts
 
 out-tree :
-	tree -N out
+	ls --color=auto -1 out/*
 
 out-each :
 	just reset out
