@@ -8,6 +8,10 @@ _default :
 
 
 
+API_LEVEL := "29"
+
+
+
 dependencies :
 	./gradlew dependencies --configuration testCompileOnly
 
@@ -23,6 +27,7 @@ super-files :
 	just extract-all-jars
 	mv jar-files/* super-files
 	tree -N -d super-files
+	just _androidx
 
 jar-files :
 	just reset jar-files
@@ -74,7 +79,7 @@ out-single input output :
 	-java -jar build/libs/dts-generator.jar \
 		-skip-declarations \
 		-input-generics ../libs/generics.txt \
-		-super $ANDROID_HOME/platforms/android-29/android.jar \
+		-super $ANDROID_HOME/platforms/android-{{API_LEVEL}}/android.jar \
 		-super super-files \
 		-super jar-files \
 		-input "jar-files/{{input}}"
@@ -89,7 +94,7 @@ out-multi output +inputs :
 	-java -jar build/libs/dts-generator.jar \
 		-skip-declarations \
 		-input-generics ../libs/generics.txt \
-		-super $ANDROID_HOME/platforms/android-29/android.jar \
+		-super $ANDROID_HOME/platforms/android-{{API_LEVEL}}/android.jar \
 		-super super-files \
 		-super jar-files \
 		-input {{inputs}}
@@ -102,7 +107,7 @@ out-all :
 	java -jar build/libs/dts-generator.jar \
 		-skip-declarations \
 		-input-generics ../libs/generics.txt \
-		-super $ANDROID_HOME/platforms/android-29/android.jar \
+		-super $ANDROID_HOME/platforms/android-{{API_LEVEL}}/android.jar \
 		-super super-files \
 		-super jar-files \
 		-input jar-files
@@ -129,28 +134,27 @@ on-watch-src :
 
 
 
-android-platform version="29" :
+android-platform :
 	just reset out
 	just reset-android
 	java -jar build/libs/dts-generator.jar \
-		-input $ANDROID_HOME/platforms/android-{{version}}/android.jar
+		-input $ANDROID_HOME/platforms/android-{{API_LEVEL}}/android.jar
 	node --require ts-node/register/transpile-only src/android-platform.ts
-	rm -r -f out/android.d.ts out/android-declarations.d.ts ../out/android-platform-{{version}}
-	mkdir -p ../out/android-platform-{{version}}
-	mv out/* ../out/android-platform-{{version}}
-	tree -N ../out/android-platform-{{version}}
+	rm -r -f out/android.d.ts out/android-declarations.d.ts ../out/android-platform-{{API_LEVEL}}
+	mkdir -p ../out/android-platform-{{API_LEVEL}}
+	mv out/* ../out/android-platform-{{API_LEVEL}}
+	tree -N ../out/android-platform-{{API_LEVEL}}
 
-androidx version="29" :
-	just super-files
+_androidx :
 	rm -r -f jar-files/*
 	mv super-files/* jar-files
 	just reset out
 	just out-each
 	mv jar-files/* super-files
-	rm -r -f ../out/androidx-{{version}}
-	mkdir -p ../out/androidx-{{version}}
-	mv out/* ../out/androidx-{{version}}
-	tree -N ../out/androidx-{{version}}
+	rm -r -f ../out/androidx-{{API_LEVEL}}
+	mkdir -p ../out/androidx-{{API_LEVEL}}
+	mv out/* ../out/androidx-{{API_LEVEL}}
+	tree -N ../out/androidx-{{API_LEVEL}}
 
 
 
